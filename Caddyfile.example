@@ -1,0 +1,122 @@
+# FocusedBytes Caddy Configuration Example
+#
+# This file shows how to configure Caddy for both development and production
+# environments running on the same server.
+#
+# Copy the relevant sections to your /etc/caddy/Caddyfile on the server.
+
+# ============================================================================
+# DEVELOPMENT ENVIRONMENT
+# ============================================================================
+
+development.focusedbytes.com {
+    # Backend API routes
+    handle /api/* {
+        reverse_proxy localhost:5000
+    }
+
+    # Health check endpoint
+    handle /health {
+        reverse_proxy localhost:5000
+    }
+
+    # Swagger/API documentation (development only)
+    handle /swagger* {
+        reverse_proxy localhost:5000
+    }
+
+    # Frontend (SvelteKit) - handles all other routes including SSR
+    handle {
+        reverse_proxy localhost:3000
+    }
+
+    # Enable access logs for debugging (optional)
+    log {
+        output file /var/log/caddy/development.focusedbytes.com.log
+    }
+}
+
+# ============================================================================
+# PRODUCTION ENVIRONMENT
+# ============================================================================
+
+focusedbytes.com {
+    # Backend API routes
+    handle /api/* {
+        reverse_proxy localhost:5000
+    }
+
+    # Health check endpoint
+    handle /health {
+        reverse_proxy localhost:5000
+    }
+
+    # NOTE: No Swagger in production for security
+    # Remove or comment out swagger routes
+
+    # Frontend (SvelteKit) - handles all other routes
+    handle {
+        reverse_proxy localhost:4000
+    }
+
+    # Production logging
+    log {
+        output file /var/log/caddy/focusedbytes.com.log
+    }
+}
+
+# ============================================================================
+# ALTERNATIVE: Static files + API only (if you deploy frontend separately)
+# ============================================================================
+
+# focusedbytes.com {
+#     # Backend API
+#     handle /api/* {
+#         reverse_proxy localhost:5000
+#     }
+#
+#     # Serve static frontend build
+#     handle {
+#         root * /var/www/focusedbytes.com
+#         try_files {path} /index.html
+#         file_server
+#     }
+# }
+
+# ============================================================================
+# ANALYTICS SUBDOMAIN (your existing configuration)
+# ============================================================================
+
+analytics.focusedbytes.com {
+    reverse_proxy localhost:3001
+}
+
+# ============================================================================
+# NOTES
+# ============================================================================
+#
+# 1. Caddy automatically handles:
+#    - SSL/TLS certificates via Let's Encrypt
+#    - HTTP to HTTPS redirects
+#    - Certificate renewals
+#
+# 2. Make sure your DNS A records point to your server IP:
+#    - development.focusedbytes.com → YOUR_SERVER_IP
+#    - focusedbytes.com → YOUR_SERVER_IP
+#
+# 3. Docker ports mapping:
+#    Development:
+#      - Frontend: 3010 (from docker-compose.development.yml)
+#      - Backend: 5010 (from docker-compose.development.yml)
+#    Production:
+#      - Frontend: 3020 (update docker-compose ports if needed)
+#      - Backend: 5020
+#
+# 4. After editing /etc/caddy/Caddyfile, reload with:
+#    sudo systemctl reload caddy
+#
+# 5. Check Caddy logs:
+#    sudo journalctl -u caddy -f
+#
+# 6. Verify configuration syntax:
+#    sudo caddy validate --config /etc/caddy/Caddyfile

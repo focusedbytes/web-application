@@ -1,0 +1,64 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to focusedbytes.com
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PORT: ${{ secrets.SERVER_PORT }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          PUBLIC_API_URL: ${{ secrets.PUBLIC_API_URL }}
+          ORIGIN: ${{ secrets.ORIGIN }}
+        run: |
+          ssh -p $SERVER_PORT $SERVER_USER@$SERVER_HOST "
+            export DEPLOY_TARGET_NAME='focusedbytes.com'
+            export DEPLOY_PATH='${{ secrets.DEPLOY_PATH }}'
+            export REPOSITORY_BRANCH='main'
+            export DOCKER_COMPOSE_FILE='docker-compose.production.yml'
+            export POSTGRES_USER='${{ secrets.POSTGRES_USER }}'
+            export POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}'
+            export PUBLIC_API_URL='${{ secrets.PUBLIC_API_URL }}'
+            export ORIGIN='${{ secrets.ORIGIN }}'
+            bash -s
+          " < ./deploy.sh
+
+      - name: Verify deployment
+        run: |
+          echo "Waiting for services to start..."
+          sleep 30
+          curl -f ${{ secrets.PUBLIC_API_URL }}/health || echo "Backend health check failed"
+
+      - name: Deployment notification
+        if: always()
+        run: |
+          if [ ${{ job.status }} == 'success' ]; then
+            echo "✅ Deployment successful to focusedbytes.com"
+          else
+            echo "❌ Deployment failed"
+          fi

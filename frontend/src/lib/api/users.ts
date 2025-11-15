@@ -7,8 +7,9 @@ import type {
 	UpdateAccountRequest,
 	UpdateUserStatusRequest
 } from '$lib/types/user';
+import { env } from '$env/dynamic/public';
 
-const API_BASE = 'http://localhost:5093/api/admin/users';
+const API_BASE = `${env.PUBLIC_API_URL || 'http://localhost:5093'}/api/admin/users`;
 
 export async function getUsers(
 	page: number = 1,

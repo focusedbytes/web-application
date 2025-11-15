@@ -12,6 +12,12 @@ jobs:
     environment: production
 
     steps:
+
+      - name: Debug secrets
+        run: |
+          echo "SERVER_HOST is set: ${{ secrets.SERVER_HOST != '' }}"
+          echo "SERVER_USER is set: ${{ secrets.SERVER_USER != '' }}"
+
       - name: Checkout code
         uses: actions/checkout@v4
 

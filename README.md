@@ -223,4 +223,6 @@ curl -X POST http://localhost:5000/api/admin/users \
 
 ## Ліцензія
 
-MIT
+Proprietary - All rights reserved. See [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2025 Focused Bytes.

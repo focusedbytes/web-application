@@ -1,12 +1,9 @@
-<script>
-	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+<svelte:head>
+	<title>FocusedBytes — Coming Soon</title>
+</svelte:head>
 
-	onMount(() => {
-		goto('/admin');
-	});
-</script>
-
-<div class="flex justify-center items-center min-h-screen">
-	<h1 class="text-2xl font-semibold text-gray-700">Завантаження...</h1>
+<div class="flex items-center justify-center min-h-screen bg-[#0f1117] text-white">
+	<h1 class="text-4xl md:text-5xl font-light tracking-wider text-center px-4">
+		Focused Bytes — вже зовсім скоро.
+	</h1>
 </div>

@@ -7,13 +7,13 @@ DEPLOY_TARGET_NAME="${DEPLOY_TARGET_NAME:-focusedbytes.com}"
 DEPLOY_PATH="${DEPLOY_PATH:-/var/www/focusedbytes}"
 REPOSITORY_BRANCH="${REPOSITORY_BRANCH:-development}"
 DOCKER_COMPOSE_FILE="${DOCKER_COMPOSE_FILE:-docker-compose.yml}"
+REPO_URL="${REPO_URL:-https://github.com/your-username/your-repo.git}"
 
 echo "🚀 Starting deployment to ${DEPLOY_TARGET_NAME}..."
 echo "📋 Branch: ${REPOSITORY_BRANCH}"
 echo "📁 Path: ${DEPLOY_PATH}"
 echo "🐳 Compose file: ${DOCKER_COMPOSE_FILE}"
-
-REPO_URL="https://github.com/$(git config --get remote.origin.url | sed 's/.*github.com[:/]\(.*\)\.git/\1/')"
+echo "📦 Repository: ${REPO_URL}"
 
 # Colors for output
 GREEN='\033[0;32m'

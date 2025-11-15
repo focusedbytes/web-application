@@ -23,28 +23,29 @@ jobs:
       - name: Add server to known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H -p ${{ vars.SERVER_PORT }} ${{ vars.SERVER_HOST }} >> ~/.ssh/known_hosts
 
       - name: Deploy to server
         env:
-          SERVER_HOST: ${{ secrets.SERVER_HOST }}
-          SERVER_PORT: ${{ secrets.SERVER_PORT }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          SERVER_HOST: ${{ vars.SERVER_HOST }}
+          SERVER_PORT: ${{ vars.SERVER_PORT }}
+          SERVER_USER: ${{ vars.SERVER_USER }}
+          DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          PUBLIC_API_URL: ${{ secrets.PUBLIC_API_URL }}
-          ORIGIN: ${{ secrets.ORIGIN }}
+          PUBLIC_API_URL: ${{ vars.PUBLIC_API_URL }}
+          ORIGIN: ${{ vars.ORIGIN }}
         run: |
           ssh -p $SERVER_PORT $SERVER_USER@$SERVER_HOST "
             export DEPLOY_TARGET_NAME='development.focusedbytes.com'
-            export DEPLOY_PATH='${{ secrets.DEPLOY_PATH }}'
+            export DEPLOY_PATH='${{ vars.DEPLOY_PATH }}'
             export REPOSITORY_BRANCH='development'
             export DOCKER_COMPOSE_FILE='docker-compose.development.yml'
+            export REPO_URL='https://github.com/${{ github.repository }}.git'
             export POSTGRES_USER='${{ secrets.POSTGRES_USER }}'
             export POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}'
-            export PUBLIC_API_URL='${{ secrets.PUBLIC_API_URL }}'
-            export ORIGIN='${{ secrets.ORIGIN }}'
+            export PUBLIC_API_URL='${{ vars.PUBLIC_API_URL }}'
+            export ORIGIN='${{ vars.ORIGIN }}'
             bash -s
           " < ./deploy.sh
 
@@ -52,7 +53,7 @@ jobs:
         run: |
           echo "Waiting for services to start..."
           sleep 30
-          curl -f ${{ secrets.PUBLIC_API_URL }}/health || echo "Backend health check failed"
+          curl -f ${{ vars.PUBLIC_API_URL }}/health || echo "Backend health check failed"
 
       - name: Deployment notification
         if: always()

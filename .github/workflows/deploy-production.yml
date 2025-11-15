@@ -48,6 +48,7 @@ jobs:
             export DEPLOY_PATH='${{ vars.DEPLOY_PATH }}'
             export REPOSITORY_BRANCH='main'
             export DOCKER_COMPOSE_FILE='docker-compose.production.yml'
+            export REPO_URL='https://github.com/${{ github.repository }}.git'
             export POSTGRES_USER='${{ secrets.POSTGRES_USER }}'
             export POSTGRES_PASSWORD='${{ secrets.POSTGRES_PASSWORD }}'
             export PUBLIC_API_URL='${{ vars.PUBLIC_API_URL }}'

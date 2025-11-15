@@ -40,6 +40,9 @@ public class EventStoreRepository
             foreach (var @event in eventsList)
             {
                 var eventData = JsonSerializer.Serialize(@event, @event.GetType());
+                var fullTypeName = @event.GetType().AssemblyQualifiedName
+                    ?? throw new InvalidOperationException($"Unable to get assembly qualified name for event type {@event.GetType().Name}");
+
                 _logger.LogDebug(
                     "Serializing event {EventType} (version {Version}) for aggregate {AggregateId}",
                     @event.EventType,
@@ -50,7 +53,7 @@ public class EventStoreRepository
                 {
                     AggregateId = aggregateId,
                     AggregateType = aggregateType,
-                    EventType = @event.EventType,
+                    EventType = fullTypeName, // Store full type name instead of simple name
                     EventData = eventData,
                     Version = ++currentVersion,
                     OccurredOn = @event.OccurredOn
@@ -98,33 +101,48 @@ public class EventStoreRepository
 
             foreach (var eventEntity in eventEntities)
             {
-                var eventType = Type.GetType($"FocusedBytes.Api.Domain.Users.Events.{eventEntity.EventType}, FocusedBytes.Api");
-                if (eventType != null)
+                // Try to load type using the stored value
+                // First attempt: Full assembly qualified name (new format)
+                var eventType = Type.GetType(eventEntity.EventType);
+
+                // Fallback: Legacy format - simple name with hardcoded namespace (backward compatibility)
+                if (eventType == null && !eventEntity.EventType.Contains(","))
                 {
-                    var @event = JsonSerializer.Deserialize(eventEntity.EventData, eventType) as IDomainEvent;
-                    if (@event != null)
-                    {
-                        events.Add(@event);
-                        _logger.LogDebug(
-                            "Deserialized event {EventType} (version {Version}) for aggregate {AggregateId}",
-                            eventEntity.EventType,
-                            eventEntity.Version,
-                            aggregateId);
-                    }
-                    else
-                    {
-                        _logger.LogWarning(
-                            "Failed to deserialize event {EventType} (version {Version}) for aggregate {AggregateId}",
-                            eventEntity.EventType,
-                            eventEntity.Version,
-                            aggregateId);
-                    }
+                    _logger.LogDebug(
+                        "Full type name not found, trying legacy format for {EventType}",
+                        eventEntity.EventType);
+
+                    eventType = Type.GetType(
+                        $"FocusedBytes.Api.Domain.Users.Events.{eventEntity.EventType}, FocusedBytes.Api");
+                }
+
+                if (eventType == null)
+                {
+                    _logger.LogWarning(
+                        "Event type {EventType} not found for aggregate {AggregateId}. " +
+                        "This might indicate a missing assembly or renamed event type.",
+                        eventEntity.EventType,
+                        aggregateId);
+                    continue;
+                }
+
+                var @event = JsonSerializer.Deserialize(eventEntity.EventData, eventType) as IDomainEvent;
+
+                if (@event != null)
+                {
+                    events.Add(@event);
+                    _logger.LogDebug(
+                        "Deserialized event {EventType} (version {Version}) for aggregate {AggregateId}",
+                        eventType.Name,
+                        eventEntity.Version,
+                        aggregateId);
                 }
                 else
                 {
                     _logger.LogWarning(
-                        "Event type {EventType} not found for aggregate {AggregateId}",
-                        eventEntity.EventType,
+                        "Failed to deserialize event {EventType} (version {Version}) for aggregate {AggregateId}",
+                        eventType.Name,
+                        eventEntity.Version,
                         aggregateId);
                 }
             }

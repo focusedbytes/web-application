@@ -93,6 +93,29 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
+// Run database migrations on startup
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        Log.Information("Running database migrations...");
+
+        var eventStoreContext = services.GetRequiredService<EventStoreDbContext>();
+        await eventStoreContext.Database.MigrateAsync();
+        Log.Information("EventStore migrations completed successfully");
+
+        var readModelContext = services.GetRequiredService<ReadModelDbContext>();
+        await readModelContext.Database.MigrateAsync();
+        Log.Information("ReadModel migrations completed successfully");
+    }
+    catch (Exception ex)
+    {
+        Log.Error(ex, "An error occurred while migrating the database");
+        throw;
+    }
+}
+
 // Configure the HTTP request pipeline
 
 // Add exception handling middleware (must be early in the pipeline)

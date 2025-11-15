@@ -64,14 +64,10 @@ docker compose -f "$DOCKER_COMPOSE_FILE" rm -f || true
 echo -e "${YELLOW}Building and starting containers...${NC}"
 docker compose -f "$DOCKER_COMPOSE_FILE" up -d --build
 
-# Wait for database to be ready
-echo -e "${YELLOW}Waiting for database to be ready...${NC}"
-sleep 10
-
-# Run database migrations
-echo -e "${YELLOW}Running database migrations...${NC}"
-docker compose -f "$DOCKER_COMPOSE_FILE" exec -T backend dotnet ef database update --context EventStoreDbContext || echo "EventStore migration completed or already up-to-date"
-docker compose -f "$DOCKER_COMPOSE_FILE" exec -T backend dotnet ef database update --context ReadModelDbContext || echo "ReadModel migration completed or already up-to-date"
+# Wait for services to be ready
+echo -e "${YELLOW}Waiting for services to be ready...${NC}"
+echo -e "${YELLOW}Note: Migrations run automatically on backend startup${NC}"
+sleep 15
 
 # Check container status
 echo -e "${YELLOW}Container status:${NC}"

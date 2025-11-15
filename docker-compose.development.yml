@@ -3,14 +3,14 @@ version: '3.8'
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: focusedbytes-db
+    container_name: focusedbytes-development-db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: focusedbytes
+      POSTGRES_DB: focusedbytes_development
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_development_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     healthcheck:
@@ -23,11 +23,11 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: focusedbytes-backend
+    container_name: focusedbytes-dev-backend
     restart: unless-stopped
     environment:
-      ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__DefaultConnection: "Host=postgres;Database=focusedbytes;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Database=focusedbytes_development;Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}"
     ports:
       - "5010:5000"
     depends_on:
@@ -44,7 +44,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: focusedbytes-frontend
+    container_name: focusedbytes-dev-frontend
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -56,4 +56,4 @@ services:
       - backend
 
 volumes:
-  postgres_data:
+  postgres_development_data:

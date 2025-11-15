@@ -133,22 +133,22 @@ Based on your existing Hetzner server setup, here's what to add to `/etc/caddy/C
 development.focusedbytes.com {
     # Backend API routes
     handle /api/* {
-        reverse_proxy localhost:5000
+        reverse_proxy localhost:5010
     }
 
     # Health check endpoint
     handle /health {
-        reverse_proxy localhost:5000
+        reverse_proxy localhost:5010
     }
 
     # Swagger/API docs (development only)
     handle /swagger* {
-        reverse_proxy localhost:5000
+        reverse_proxy localhost:5010
     }
 
     # Frontend (SvelteKit) - all other routes
     handle {
-        reverse_proxy localhost:3000
+        reverse_proxy localhost:3010
     }
 
     # Logging (optional)
@@ -166,18 +166,18 @@ Update your existing `focusedbytes.com` block:
 focusedbytes.com {
     # Backend API routes
     handle /api/* {
-        reverse_proxy localhost:5001
+        reverse_proxy localhost:5020
     }
 
     # Health check endpoint
     handle /health {
-        reverse_proxy localhost:5001
+        reverse_proxy localhost:5020
     }
 
     # Frontend (SvelteKit) - all other routes
     # Note: Removes static file serving and studio auth
     handle {
-        reverse_proxy localhost:4000
+        reverse_proxy localhost:3020
     }
 
     # Logging
@@ -196,10 +196,10 @@ analytics.focusedbytes.com {
 
 | Environment | Service | Docker Port | Caddy Proxies From |
 |-------------|---------|-------------|-------------------|
-| **Development** | Frontend | 3000 | https://development.focusedbytes.com |
-| **Development** | Backend | 5000 | https://development.focusedbytes.com/api |
-| **Production** | Frontend | 4000 | https://focusedbytes.com |
-| **Production** | Backend | 5001 | https://focusedbytes.com/api |
+| **Development** | Frontend | 3010 | https://development.focusedbytes.com |
+| **Development** | Backend | 5010 | https://development.focusedbytes.com/api |
+| **Production** | Frontend | 3020 | https://focusedbytes.com |
+| **Production** | Backend | 5020 | https://focusedbytes.com/api |
 | **Analytics** | Umami (existing) | 3001 | https://analytics.focusedbytes.com |
 
 ### Apply Caddy Changes

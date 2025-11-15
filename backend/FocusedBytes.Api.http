@@ -1,0 +1,6 @@
+@FocusedBytes.Api_HostAddress = http://localhost:5093
+
+GET {{FocusedBytes.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

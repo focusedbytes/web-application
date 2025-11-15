@@ -1,0 +1,37 @@
+// Re-export commonly used icons from lucide-svelte
+// This provides a centralized place to manage icons used throughout the app
+
+export {
+	User,
+	Users,
+	UserPlus,
+	UserMinus,
+	UserCheck,
+	UserX,
+	Edit,
+	Trash2 as Trash,
+	Plus,
+	Check,
+	X,
+	ChevronLeft,
+	ChevronRight,
+	ChevronDown,
+	ChevronUp,
+	Search,
+	Filter,
+	MoreVertical,
+	Settings,
+	LogOut,
+	Mail,
+	Phone,
+	Calendar,
+	Clock,
+	AlertCircle,
+	CheckCircle,
+	XCircle,
+	Info,
+	Home,
+	Menu,
+	Save,
+	Loader2 as Loader
+} from 'lucide-svelte';

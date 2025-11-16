@@ -150,8 +150,6 @@ Follow: https://gist.github.com/robertpainsi/b632364184e70900af4ab688decf6f53
 <type>(<scope>): <subject>
 
 <body>
-
-<footer>
 ```
 
 **Types:**
@@ -173,6 +171,11 @@ Implement user activation/deactivation with domain events.
 
 Closes #123
 ```
+
+Follow conventional commit format with these preferences:
+
+1. Do not append the "Generated with Claude Code" line
+2. Do not add "Co-Authored-By: Claude" trailers
 
 ---
 

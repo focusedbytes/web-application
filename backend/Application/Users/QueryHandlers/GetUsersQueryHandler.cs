@@ -17,7 +17,7 @@ public class GetUsersQueryHandler : IQueryHandler<GetUsersQuery, UserListResult>
     public async Task<UserListResult> HandleAsync(GetUsersQuery query, CancellationToken cancellationToken = default)
     {
         var usersQuery = _context.Users
-            .Include(u => u.Account)
+            .Include(u => u.AuthMethods)
             .AsQueryable();
 
         if (!query.IncludeDeleted)
@@ -33,11 +33,17 @@ public class GetUsersQueryHandler : IQueryHandler<GetUsersQuery, UserListResult>
             .Take(query.PageSize)
             .Select(u => new UserDto(
                 u.Id,
-                u.Account!.Email,
+                u.Username,
+                u.DisplayName,
                 u.Role,
                 u.IsActive,
-                u.Account.LastLoginAt,
-                u.CreatedAt
+                u.LastLoginAt,
+                u.CreatedAt,
+                u.AuthMethods.Select(a => new AuthMethodDto(
+                    a.Identifier,
+                    a.Type,
+                    a.CreatedAt
+                )).ToList()
             ))
             .ToListAsync(cancellationToken);
 

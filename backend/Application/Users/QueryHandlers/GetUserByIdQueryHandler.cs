@@ -17,16 +17,22 @@ public class GetUserByIdQueryHandler : IQueryHandler<GetUserByIdQuery, UserDetai
     public async Task<UserDetailDto?> HandleAsync(GetUserByIdQuery query, CancellationToken cancellationToken = default)
     {
         var user = await _context.Users
-            .Include(u => u.Account)
+            .Include(u => u.AuthMethods)
             .Where(u => u.Id == query.UserId && !u.IsDeleted)
             .Select(u => new UserDetailDto(
                 u.Id,
-                u.Account!.Email,
+                u.Username,
+                u.DisplayName,
                 u.Role,
                 u.IsActive,
-                u.Account.LastLoginAt,
+                u.LastLoginAt,
                 u.CreatedAt,
-                u.UpdatedAt
+                u.UpdatedAt,
+                u.AuthMethods.Select(a => new AuthMethodDto(
+                    a.Identifier,
+                    a.Type,
+                    a.CreatedAt
+                )).ToList()
             ))
             .FirstOrDefaultAsync(cancellationToken);
 

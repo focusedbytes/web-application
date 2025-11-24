@@ -11,7 +11,7 @@ public class ReadModelDbContext : DbContext
     }
 
     public DbSet<UserReadModel> Users { get; set; } = null!;
-    public DbSet<AccountReadModel> Accounts { get; set; } = null!;
+    public DbSet<AuthMethodReadModel> AuthMethods { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -19,20 +19,23 @@ public class ReadModelDbContext : DbContext
         {
             entity.ToTable("Users");
             entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Username).IsUnique();
             entity.HasIndex(e => e.IsDeleted);
 
-            entity.HasOne(e => e.Account)
+            entity.HasMany(e => e.AuthMethods)
                 .WithOne(e => e.User)
-                .HasForeignKey<AccountReadModel>(e => e.UserId)
+                .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
-        modelBuilder.Entity<AccountReadModel>(entity =>
+        modelBuilder.Entity<AuthMethodReadModel>(entity =>
         {
-            entity.ToTable("Accounts");
+            entity.ToTable("AuthMethods");
             entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.UserId).IsUnique();
-            entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.UserId);
+
+            // Composite unique index: same identifier+type combination cannot exist for the same user
+            entity.HasIndex(e => new { e.Identifier, e.Type }).IsUnique();
         });
     }
 }

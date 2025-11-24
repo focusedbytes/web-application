@@ -2,8 +2,7 @@ using FocusedBytes.Api.Application.Common.CQRS;
 
 namespace FocusedBytes.Api.Domain.Users.Commands;
 
-public record UpdateAccountCommand(
+public record RemoveAuthMethodCommand(
     Guid UserId,
-    string? Email = null,
-    string? Password = null
+    string Identifier
 ) : ICommand;

@@ -18,9 +18,17 @@ public record UserListResult(
 
 public record UserDto(
     Guid Id,
-    string? Email,
+    string Username,
+    string? DisplayName,
     string Role,
     bool IsActive,
     DateTime? LastLoginAt,
+    DateTime CreatedAt,
+    List<AuthMethodDto> AuthMethods
+);
+
+public record AuthMethodDto(
+    string Identifier,
+    string Type,
     DateTime CreatedAt
 );

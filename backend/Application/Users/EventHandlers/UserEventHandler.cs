@@ -10,7 +10,10 @@ namespace FocusedBytes.Api.Application.Users.EventHandlers;
 public class UserEventHandler :
     IEventHandler<UserCreatedEvent>,
     IEventHandler<UserUpdatedEvent>,
-    IEventHandler<AccountUpdatedEvent>,
+    IEventHandler<UserProfileUpdatedEvent>,
+    IEventHandler<AuthMethodAddedEvent>,
+    IEventHandler<AuthMethodUpdatedEvent>,
+    IEventHandler<AuthMethodRemovedEvent>,
     IEventHandler<UserDeactivatedEvent>,
     IEventHandler<UserLastLoginUpdatedEvent>,
     IEventHandler<UserDeletedEvent>
@@ -33,29 +36,18 @@ public class UserEventHandler :
             var user = new UserReadModel
             {
                 Id = @event.UserId,
+                Username = @event.Username,
                 Role = @event.Role.ToString(),
-                IsActive = @event.IsActive,
+                IsActive = true,
                 IsDeleted = false,
-                CreatedAt = @event.OccurredOn,
-                UpdatedAt = @event.OccurredOn
-            };
-
-            var account = new AccountReadModel
-            {
-                Id = Guid.NewGuid(),
-                UserId = @event.UserId,
-                Email = @event.Email,
-                Phone = @event.Phone,
-                HashedPassword = @event.HashedPassword,
-                CreatedAt = @event.OccurredOn,
+                CreatedAt = @event.CreatedAt,
                 UpdatedAt = @event.OccurredOn
             };
 
             await _context.Users.AddAsync(user, cancellationToken);
-            await _context.Accounts.AddAsync(account, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
-            _logger.LogInformation("Read models created successfully for user {UserId}", @event.UserId);
+            _logger.LogInformation("User read model created successfully for user {UserId}", @event.UserId);
         }
         catch (Exception ex)
         {
@@ -77,7 +69,7 @@ public class UserEventHandler :
                 user.UpdatedAt = @event.OccurredOn;
                 await _context.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation("User read model updated successfully for user {UserId}", @event.UserId);
+                _logger.LogInformation("User role updated successfully for user {UserId}", @event.UserId);
             }
             else
             {
@@ -91,48 +83,129 @@ public class UserEventHandler :
         }
     }
 
-    public async Task HandleAsync(AccountUpdatedEvent @event, CancellationToken cancellationToken = default)
+    public async Task HandleAsync(UserProfileUpdatedEvent @event, CancellationToken cancellationToken = default)
     {
-        _logger.LogInformation("Handling AccountUpdatedEvent for user {UserId}", @event.UserId);
+        _logger.LogInformation("Handling UserProfileUpdatedEvent for user {UserId}", @event.UserId);
 
         try
         {
-            var account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.UserId == @event.UserId, cancellationToken);
-
-            if (account != null)
+            var user = await _context.Users.FindAsync(new object[] { @event.UserId }, cancellationToken);
+            if (user != null)
             {
-                if (@event.Email != null)
-                {
-                    _logger.LogDebug("Updating email for user {UserId}", @event.UserId);
-                    account.Email = @event.Email;
-                }
-
-                if (@event.Phone != null)
-                {
-                    _logger.LogDebug("Updating phone for user {UserId}", @event.UserId);
-                    account.Phone = @event.Phone;
-                }
-
-                if (@event.HashedPassword != null)
-                {
-                    _logger.LogDebug("Updating password for user {UserId}", @event.UserId);
-                    account.HashedPassword = @event.HashedPassword;
-                }
-
-                account.UpdatedAt = @event.OccurredOn;
+                user.DisplayName = @event.DisplayName;
+                user.UpdatedAt = @event.OccurredOn;
                 await _context.SaveChangesAsync(cancellationToken);
 
-                _logger.LogInformation("Account read model updated successfully for user {UserId}", @event.UserId);
+                _logger.LogInformation("User profile updated successfully for user {UserId}", @event.UserId);
             }
             else
             {
-                _logger.LogWarning("Account for user {UserId} not found in read model when handling AccountUpdatedEvent", @event.UserId);
+                _logger.LogWarning("User {UserId} not found in read model when handling UserProfileUpdatedEvent", @event.UserId);
             }
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to handle AccountUpdatedEvent for user {UserId}", @event.UserId);
+            _logger.LogError(ex, "Failed to handle UserProfileUpdatedEvent for user {UserId}", @event.UserId);
+            throw;
+        }
+    }
+
+    public async Task HandleAsync(AuthMethodAddedEvent @event, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Handling AuthMethodAddedEvent for user {UserId} - Type: {Type}, Identifier: {Identifier}",
+            @event.UserId,
+            @event.Type,
+            @event.Identifier);
+
+        try
+        {
+            var authMethod = new AuthMethodReadModel
+            {
+                Id = Guid.NewGuid(),
+                UserId = @event.UserId,
+                Identifier = @event.Identifier,
+                Type = @event.Type.ToString(),
+                Secret = @event.Secret,
+                CreatedAt = @event.OccurredOn
+            };
+
+            await _context.AuthMethods.AddAsync(authMethod, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Auth method added successfully for user {UserId}", @event.UserId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to handle AuthMethodAddedEvent for user {UserId}", @event.UserId);
+            throw;
+        }
+    }
+
+    public async Task HandleAsync(AuthMethodUpdatedEvent @event, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Handling AuthMethodUpdatedEvent for user {UserId} - Identifier: {Identifier}",
+            @event.UserId,
+            @event.Identifier);
+
+        try
+        {
+            var authMethod = await _context.AuthMethods
+                .FirstOrDefaultAsync(a => a.UserId == @event.UserId && a.Identifier == @event.Identifier, cancellationToken);
+
+            if (authMethod != null)
+            {
+                authMethod.Secret = @event.NewSecret;
+                await _context.SaveChangesAsync(cancellationToken);
+
+                _logger.LogInformation("Auth method updated successfully for user {UserId}", @event.UserId);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Auth method not found for user {UserId} with identifier {Identifier} when handling AuthMethodUpdatedEvent",
+                    @event.UserId,
+                    @event.Identifier);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to handle AuthMethodUpdatedEvent for user {UserId}", @event.UserId);
+            throw;
+        }
+    }
+
+    public async Task HandleAsync(AuthMethodRemovedEvent @event, CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation(
+            "Handling AuthMethodRemovedEvent for user {UserId} - Identifier: {Identifier}",
+            @event.UserId,
+            @event.Identifier);
+
+        try
+        {
+            var authMethod = await _context.AuthMethods
+                .FirstOrDefaultAsync(a => a.UserId == @event.UserId && a.Identifier == @event.Identifier, cancellationToken);
+
+            if (authMethod != null)
+            {
+                _context.AuthMethods.Remove(authMethod);
+                await _context.SaveChangesAsync(cancellationToken);
+
+                _logger.LogInformation("Auth method removed successfully for user {UserId}", @event.UserId);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Auth method not found for user {UserId} with identifier {Identifier} when handling AuthMethodRemovedEvent",
+                    @event.UserId,
+                    @event.Identifier);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to handle AuthMethodRemovedEvent for user {UserId}", @event.UserId);
             throw;
         }
     }
@@ -171,20 +244,19 @@ public class UserEventHandler :
 
         try
         {
-            var account = await _context.Accounts
-                .FirstOrDefaultAsync(a => a.UserId == @event.UserId, cancellationToken);
+            var user = await _context.Users.FindAsync(new object[] { @event.UserId }, cancellationToken);
 
-            if (account != null)
+            if (user != null)
             {
-                account.LastLoginAt = @event.LastLoginAt;
-                account.UpdatedAt = @event.OccurredOn;
+                user.LastLoginAt = @event.LastLoginAt;
+                user.UpdatedAt = @event.OccurredOn;
                 await _context.SaveChangesAsync(cancellationToken);
 
                 _logger.LogInformation("Last login updated successfully for user {UserId}", @event.UserId);
             }
             else
             {
-                _logger.LogWarning("Account for user {UserId} not found in read model when handling UserLastLoginUpdatedEvent", @event.UserId);
+                _logger.LogWarning("User {UserId} not found in read model when handling UserLastLoginUpdatedEvent", @event.UserId);
             }
         }
         catch (Exception ex)

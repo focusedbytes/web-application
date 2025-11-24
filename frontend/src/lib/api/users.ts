@@ -4,7 +4,9 @@ import type {
 	UserListResult,
 	CreateUserRequest,
 	UpdateUserRequest,
-	UpdateAccountRequest,
+	UpdateProfileRequest,
+	AddAuthMethodRequest,
+	UpdateAuthMethodRequest,
 	UpdateUserStatusRequest
 } from '$lib/types/user';
 import { env } from '$env/dynamic/public';
@@ -52,13 +54,38 @@ export async function updateUser(id: string, data: UpdateUserRequest): Promise<v
 	if (!response.ok) throw new Error('Failed to update user');
 }
 
-export async function updateAccount(id: string, data: UpdateAccountRequest): Promise<void> {
-	const response = await fetch(`${API_BASE}/${id}/account`, {
+export async function updateProfile(id: string, data: UpdateProfileRequest): Promise<void> {
+	const response = await fetch(`${API_BASE}/${id}/profile`, {
 		method: 'PATCH',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(data)
 	});
-	if (!response.ok) throw new Error('Failed to update account');
+	if (!response.ok) throw new Error('Failed to update profile');
+}
+
+export async function addAuthMethod(id: string, data: AddAuthMethodRequest): Promise<void> {
+	const response = await fetch(`${API_BASE}/${id}/auth-methods`, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	});
+	if (!response.ok) throw new Error('Failed to add authentication method');
+}
+
+export async function updateAuthMethod(id: string, data: UpdateAuthMethodRequest): Promise<void> {
+	const response = await fetch(`${API_BASE}/${id}/auth-methods`, {
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data)
+	});
+	if (!response.ok) throw new Error('Failed to update authentication method');
+}
+
+export async function removeAuthMethod(id: string, identifier: string): Promise<void> {
+	const response = await fetch(`${API_BASE}/${id}/auth-methods/${encodeURIComponent(identifier)}`, {
+		method: 'DELETE'
+	});
+	if (!response.ok) throw new Error('Failed to remove authentication method');
 }
 
 export async function updateUserStatus(id: string, data: UpdateUserStatusRequest): Promise<void> {

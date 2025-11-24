@@ -3,6 +3,7 @@ using System;
 using FocusedBytes.Api.Infrastructure.ReadModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace FocusedBytes.Api.Infrastructure.Persistence.Migrations.ReadModels
 {
     [DbContext(typeof(ReadModelDbContext))]
-    partial class ReadModelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251124064246_RemovePhoneColumn")]
+    partial class RemovePhoneColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,7 +25,7 @@ namespace FocusedBytes.Api.Infrastructure.Persistence.Migrations.ReadModels
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("FocusedBytes.Api.Infrastructure.ReadModels.Entities.AuthMethodReadModel", b =>
+            modelBuilder.Entity("FocusedBytes.Api.Infrastructure.ReadModels.Entities.AccountReadModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -31,28 +34,31 @@ namespace FocusedBytes.Api.Infrastructure.Persistence.Migrations.ReadModels
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Identifier")
+                    b.Property<string>("Email")
+                        .HasColumnType("text");
+
+                    b.Property<string>("HashedPassword")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Secret")
-                        .HasColumnType("text");
+                    b.Property<DateTime?>("LastLoginAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("Identifier", "Type")
+                    b.HasIndex("Email")
                         .IsUnique();
 
-                    b.ToTable("AuthMethods", (string)null);
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("Accounts", (string)null);
                 });
 
             modelBuilder.Entity("FocusedBytes.Api.Infrastructure.ReadModels.Entities.UserReadModel", b =>
@@ -64,17 +70,11 @@ namespace FocusedBytes.Api.Infrastructure.Persistence.Migrations.ReadModels
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("DisplayName")
-                        .HasColumnType("text");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("boolean");
-
-                    b.Property<DateTime?>("LastLoginAt")
-                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -83,25 +83,18 @@ namespace FocusedBytes.Api.Infrastructure.Persistence.Migrations.ReadModels
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("text");
-
                     b.HasKey("Id");
 
                     b.HasIndex("IsDeleted");
 
-                    b.HasIndex("Username")
-                        .IsUnique();
-
                     b.ToTable("Users", (string)null);
                 });
 
-            modelBuilder.Entity("FocusedBytes.Api.Infrastructure.ReadModels.Entities.AuthMethodReadModel", b =>
+            modelBuilder.Entity("FocusedBytes.Api.Infrastructure.ReadModels.Entities.AccountReadModel", b =>
                 {
                     b.HasOne("FocusedBytes.Api.Infrastructure.ReadModels.Entities.UserReadModel", "User")
-                        .WithMany("AuthMethods")
-                        .HasForeignKey("UserId")
+                        .WithOne("Account")
+                        .HasForeignKey("FocusedBytes.Api.Infrastructure.ReadModels.Entities.AccountReadModel", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -110,7 +103,7 @@ namespace FocusedBytes.Api.Infrastructure.Persistence.Migrations.ReadModels
 
             modelBuilder.Entity("FocusedBytes.Api.Infrastructure.ReadModels.Entities.UserReadModel", b =>
                 {
-                    b.Navigation("AuthMethods");
+                    b.Navigation("Account");
                 });
 #pragma warning restore 612, 618
         }

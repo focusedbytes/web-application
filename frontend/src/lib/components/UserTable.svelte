@@ -11,12 +11,25 @@
 	let { users, onEdit, onDelete, onToggleStatus }: Props = $props();
 
 	function formatDate(date: string | null): string {
-		if (!date) return 'Ніколи';
-		return new Date(date).toLocaleString('uk-UA');
+		if (!date) return 'Never';
+		return new Date(date).toLocaleString('en-US');
 	}
 
 	function getRoleLabel(role: string): string {
-		return role === 'Admin' ? 'Адміністратор' : 'Користувач';
+		return role === 'Admin' ? 'Administrator' : 'User';
+	}
+
+	function formatAuthMethods(authMethods: User['authMethods']): string {
+		if (!authMethods || authMethods.length === 0) return 'None';
+		return authMethods.map((am) => `${am.type}: ${am.identifier}`).join(', ');
+	}
+
+	function getPrimaryAuthMethod(authMethods: User['authMethods']): string {
+		if (!authMethods || authMethods.length === 0) return 'None';
+		// Return the first auth method or prioritize email
+		const emailMethod = authMethods.find((am) => am.type === 'Email');
+		const primaryMethod = emailMethod || authMethods[0];
+		return `${primaryMethod.type}: ${primaryMethod.identifier}`;
 	}
 </script>
 
@@ -25,46 +38,58 @@
 		<thead class="bg-gray-50">
 			<tr>
 				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-					Email / Phone
+					Username
 				</th>
 				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-					Роль
+					Display Name
 				</th>
 				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-					Статус
+					Primary Auth
 				</th>
 				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-					Останній вхід
+					Role
 				</th>
 				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-					Створено
+					Status
 				</th>
 				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-					Дії
+					Last Login
+				</th>
+				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+					Created
+				</th>
+				<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+					Actions
 				</th>
 			</tr>
 		</thead>
 		<tbody class="divide-y divide-gray-200">
 			{#each users as user}
 				<tr class="hover:bg-gray-50 transition">
+					<td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+						{user.username}
+					</td>
 					<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-						{#if user.email}
-							{user.email}
-						{:else if user.phone}
-							{user.phone}
-						{/if}
+						{user.displayName || '-'}
+					</td>
+					<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+						{getPrimaryAuthMethod(user.authMethods)}
 					</td>
 					<td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
 						{getRoleLabel(user.role)}
 					</td>
 					<td class="px-6 py-4 whitespace-nowrap">
 						{#if user.isActive}
-							<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-								Активний
+							<span
+								class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800"
+							>
+								Active
 							</span>
 						{:else}
-							<span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-								Деактивований
+							<span
+								class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800"
+							>
+								Inactive
 							</span>
 						{/if}
 					</td>
@@ -79,19 +104,19 @@
 							onclick={() => onEdit(user.id)}
 							class="text-blue-600 hover:text-blue-900 transition"
 						>
-							Редагувати
+							Edit
 						</button>
 						<button
 							onclick={() => onToggleStatus(user.id, !user.isActive)}
 							class="text-amber-600 hover:text-amber-900 transition"
 						>
-							{user.isActive ? 'Деактивувати' : 'Активувати'}
+							{user.isActive ? 'Deactivate' : 'Activate'}
 						</button>
 						<button
 							onclick={() => onDelete(user.id)}
 							class="text-red-600 hover:text-red-900 transition"
 						>
-							Видалити
+							Delete
 						</button>
 					</td>
 				</tr>

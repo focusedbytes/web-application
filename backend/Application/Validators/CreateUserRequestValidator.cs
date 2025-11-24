@@ -1,5 +1,6 @@
 using FluentValidation;
 using FocusedBytes.Api.Application.DTOs;
+using FocusedBytes.Api.Domain.Users.Entities;
 
 namespace FocusedBytes.Api.Application.Validators;
 
@@ -11,47 +12,56 @@ public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 {
     public CreateUserRequestValidator()
     {
-        // Either email or phone must be provided
-        RuleFor(x => x)
-            .Must(x => !string.IsNullOrWhiteSpace(x.Email) || !string.IsNullOrWhiteSpace(x.Phone))
-            .WithMessage("Either email or phone must be provided");
-
-        // Email validation (if provided)
-        When(x => !string.IsNullOrWhiteSpace(x.Email), () =>
-        {
-            RuleFor(x => x.Email)
-                .NotEmpty()
-                .WithMessage("Email cannot be empty")
-                .EmailAddress()
-                .WithMessage("Email must be a valid email address")
-                .MaximumLength(255)
-                .WithMessage("Email must not exceed 255 characters");
-        });
-
-        // Phone validation (if provided)
-        When(x => !string.IsNullOrWhiteSpace(x.Phone), () =>
-        {
-            RuleFor(x => x.Phone)
-                .NotEmpty()
-                .WithMessage("Phone cannot be empty")
-                .Matches(@"^\+380\d{9}$")
-                .WithMessage("Phone must be in format +380XXXXXXXXX")
-                .MaximumLength(20)
-                .WithMessage("Phone must not exceed 20 characters");
-        });
-
-        // Password validation
-        RuleFor(x => x.Password)
+        // Username validation
+        RuleFor(x => x.Username)
             .NotEmpty()
-            .WithMessage("Password is required")
+            .WithMessage("Username is required")
             .MinimumLength(6)
-            .WithMessage("Password must be at least 6 characters")
-            .MaximumLength(100)
-            .WithMessage("Password must not exceed 100 characters");
+            .WithMessage("Username must be at least 6 characters")
+            .MaximumLength(50)
+            .WithMessage("Username must not exceed 50 characters")
+            .Matches(@"^[a-zA-Z0-9_-]+$")
+            .WithMessage("Username can only contain letters, numbers, underscores, and hyphens");
 
         // Role validation
         RuleFor(x => x.Role)
             .IsInEnum()
             .WithMessage("Invalid user role");
+
+        // AuthIdentifier validation
+        RuleFor(x => x.AuthIdentifier)
+            .NotEmpty()
+            .WithMessage("Auth identifier is required")
+            .MaximumLength(255)
+            .WithMessage("Auth identifier must not exceed 255 characters");
+
+        // AuthType validation
+        RuleFor(x => x.AuthType)
+            .IsInEnum()
+            .WithMessage("Invalid authentication type");
+
+        // Email-specific validation
+        When(x => x.AuthType == AuthMethodType.Email, () =>
+        {
+            RuleFor(x => x.AuthIdentifier)
+                .EmailAddress()
+                .WithMessage("Auth identifier must be a valid email address for Email auth type");
+
+            RuleFor(x => x.AuthSecret)
+                .NotEmpty()
+                .WithMessage("Password is required for Email authentication")
+                .MinimumLength(6)
+                .WithMessage("Password must be at least 6 characters")
+                .MaximumLength(100)
+                .WithMessage("Password must not exceed 100 characters");
+        });
+
+        // Phone-specific validation
+        When(x => x.AuthType == AuthMethodType.Phone, () =>
+        {
+            RuleFor(x => x.AuthIdentifier)
+                .Matches(@"^\+?[1-9]\d{1,14}$")
+                .WithMessage("Auth identifier must be a valid phone number in E.164 format");
+        });
     }
 }

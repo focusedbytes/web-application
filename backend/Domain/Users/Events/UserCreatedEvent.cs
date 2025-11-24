@@ -6,25 +6,19 @@ namespace FocusedBytes.Api.Domain.Users.Events;
 public class UserCreatedEvent : DomainEvent
 {
     public Guid UserId { get; init; }
-    public string Email { get; init; }
-    public string? Phone { get; init; }
-    public string HashedPassword { get; init; }
+    public string Username { get; init; }
     public UserRole Role { get; init; }
-    public bool IsActive { get; init; }
+    public DateTime CreatedAt { get; init; }
 
     public UserCreatedEvent(
         Guid userId,
-        string email,
-        string? phone,
-        string hashedPassword,
+        string username,
         UserRole role,
-        bool isActive = true)
+        DateTime createdAt)
     {
         UserId = userId;
-        Email = email;
-        Phone = phone;
-        HashedPassword = hashedPassword;
+        Username = username;
         Role = role;
-        IsActive = isActive;
+        CreatedAt = createdAt;
     }
 }

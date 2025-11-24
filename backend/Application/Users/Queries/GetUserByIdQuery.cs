@@ -6,11 +6,12 @@ public record GetUserByIdQuery(Guid UserId) : IQuery<UserDetailDto?>;
 
 public record UserDetailDto(
     Guid Id,
-    string? Email,
-    string? Phone,
+    string Username,
+    string? DisplayName,
     string Role,
     bool IsActive,
     DateTime? LastLoginAt,
     DateTime CreatedAt,
-    DateTime UpdatedAt
+    DateTime UpdatedAt,
+    List<AuthMethodDto> AuthMethods
 );

@@ -93,26 +93,33 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
-// Run database migrations on startup
-using (var scope = app.Services.CreateScope())
+// Run database migrations on startup (skip during design-time/EF tools execution)
+var isDesignTime = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "DesignTime" ||
+                   args.Contains("--no-build") ||
+                   AppDomain.CurrentDomain.GetData("DesignTime") != null;
+
+if (!isDesignTime)
 {
-    var services = scope.ServiceProvider;
-    try
+    using (var scope = app.Services.CreateScope())
     {
-        Log.Information("Running database migrations...");
+        var services = scope.ServiceProvider;
+        try
+        {
+            Log.Information("Running database migrations...");
 
-        var eventStoreContext = services.GetRequiredService<EventStoreDbContext>();
-        await eventStoreContext.Database.MigrateAsync();
-        Log.Information("EventStore migrations completed successfully");
+            var eventStoreContext = services.GetRequiredService<EventStoreDbContext>();
+            await eventStoreContext.Database.MigrateAsync();
+            Log.Information("EventStore migrations completed successfully");
 
-        var readModelContext = services.GetRequiredService<ReadModelDbContext>();
-        await readModelContext.Database.MigrateAsync();
-        Log.Information("ReadModel migrations completed successfully");
-    }
-    catch (Exception ex)
-    {
-        Log.Error(ex, "An error occurred while migrating the database");
-        throw;
+            var readModelContext = services.GetRequiredService<ReadModelDbContext>();
+            await readModelContext.Database.MigrateAsync();
+            Log.Information("ReadModel migrations completed successfully");
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "An error occurred while migrating the database");
+            throw;
+        }
     }
 }
 
@@ -158,7 +165,7 @@ Log.Information("FocusedBytes API started successfully");
 
 app.Run();
 }
-catch (Exception ex)
+catch (Exception ex) when (ex is not Microsoft.Extensions.Hosting.HostAbortedException)
 {
     Log.Fatal(ex, "Application terminated unexpectedly");
     throw;

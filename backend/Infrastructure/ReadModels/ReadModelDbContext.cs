@@ -33,7 +33,6 @@ public class ReadModelDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.UserId).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
-            entity.HasIndex(e => e.Phone).IsUnique();
         });
     }
 }

@@ -21,27 +21,19 @@ public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand, Guid>
     public async Task<Guid> HandleAsync(CreateUserCommand command, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation(
-            "Creating user with email: {Email}, phone: {Phone}, role: {Role}",
-            command.Email ?? "N/A",
-            command.Phone ?? "N/A",
+            "Creating user with email: {Email}, role: {Role}",
+            command.Email,
             command.Role);
 
         try
         {
-            var email = !string.IsNullOrWhiteSpace(command.Email)
-                ? Email.Create(command.Email)
-                : null;
-
-            var phone = !string.IsNullOrWhiteSpace(command.Phone)
-                ? Phone.Create(command.Phone)
-                : null;
-
+            var email = Email.Create(command.Email);
             var hashedPassword = HashedPassword.Create(command.Password);
 
             var userId = Guid.NewGuid();
             _logger.LogDebug("Generated new user ID: {UserId}", userId);
 
-            var user = User.Create(userId, email, phone, hashedPassword, command.Role);
+            var user = User.Create(userId, email, hashedPassword, command.Role);
             _logger.LogDebug("User aggregate created successfully");
 
             await _eventStore.SaveEventsAsync(
@@ -58,9 +50,8 @@ public class CreateUserCommandHandler : ICommandHandler<CreateUserCommand, Guid>
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to create user with email: {Email}, phone: {Phone}",
-                command.Email ?? "N/A",
-                command.Phone ?? "N/A");
+            _logger.LogError(ex, "Failed to create user with email: {Email}",
+                command.Email);
             throw;
         }
     }

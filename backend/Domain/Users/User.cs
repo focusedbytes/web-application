@@ -7,7 +7,6 @@ namespace FocusedBytes.Api.Domain.Users;
 public class User : AggregateRoot
 {
     public Email? Email { get; private set; }
-    public Phone? Phone { get; private set; }
     public HashedPassword? HashedPassword { get; private set; }
     public UserRole Role { get; private set; }
     public bool IsActive { get; private set; }
@@ -18,19 +17,17 @@ public class User : AggregateRoot
 
     public static User Create(
         Guid id,
-        Email? email,
-        Phone? phone,
+        Email email,
         HashedPassword hashedPassword,
         UserRole role)
     {
-        if (email == null && phone == null)
-            throw new InvalidOperationException("User must have either email or phone");
+        if (email == null)
+            throw new InvalidOperationException("User must have an email");
 
         var user = new User();
         user.RaiseEvent(new UserCreatedEvent(
             id,
-            email?.Value ?? string.Empty,
-            phone?.Value,
+            email.Value,
             hashedPassword.Value,
             role,
             isActive: true));
@@ -46,7 +43,7 @@ public class User : AggregateRoot
         RaiseEvent(new UserUpdatedEvent(Id, role));
     }
 
-    public void UpdateAccount(Email? email = null, Phone? phone = null, HashedPassword? hashedPassword = null)
+    public void UpdateAccount(Email? email = null, HashedPassword? hashedPassword = null)
     {
         if (IsDeleted)
             throw new InvalidOperationException("Cannot update deleted user");
@@ -54,7 +51,6 @@ public class User : AggregateRoot
         RaiseEvent(new AccountUpdatedEvent(
             Id,
             email?.Value,
-            phone?.Value,
             hashedPassword?.Value));
     }
 
@@ -116,7 +112,6 @@ public class User : AggregateRoot
     {
         Id = @event.UserId;
         Email = !string.IsNullOrEmpty(@event.Email) ? Email.Create(@event.Email) : null;
-        Phone = !string.IsNullOrEmpty(@event.Phone) ? Phone.Create(@event.Phone) : null;
         HashedPassword = HashedPassword.FromHash(@event.HashedPassword);
         Role = @event.Role;
         IsActive = @event.IsActive;
@@ -132,9 +127,6 @@ public class User : AggregateRoot
     {
         if (@event.Email != null)
             Email = Email.Create(@event.Email);
-
-        if (@event.Phone != null)
-            Phone = Phone.Create(@event.Phone);
 
         if (@event.HashedPassword != null)
             HashedPassword = HashedPassword.FromHash(@event.HashedPassword);

@@ -6,7 +6,6 @@ namespace FocusedBytes.Api.Application.DTOs;
 /// Request DTO for creating a new user.
 /// </summary>
 public record CreateUserRequest(
-    string? Email,
-    string? Phone,
+    string Email,
     string Password,
     UserRole Role);

@@ -6,7 +6,6 @@ export enum UserRole {
 export interface User {
 	id: string;
 	email: string | null;
-	phone: string | null;
 	role: string;
 	isActive: boolean;
 	lastLoginAt: string | null;
@@ -26,8 +25,7 @@ export interface UserListResult {
 }
 
 export interface CreateUserRequest {
-	email?: string;
-	phone?: string;
+	email: string;
 	password: string;
 	role: UserRole;
 }
@@ -38,7 +36,6 @@ export interface UpdateUserRequest {
 
 export interface UpdateAccountRequest {
 	email?: string;
-	phone?: string;
 	password?: string;
 }
 

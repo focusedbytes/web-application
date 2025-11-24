@@ -45,7 +45,6 @@ public class UserEventHandler :
                 Id = Guid.NewGuid(),
                 UserId = @event.UserId,
                 Email = @event.Email,
-                Phone = @event.Phone,
                 HashedPassword = @event.HashedPassword,
                 CreatedAt = @event.OccurredOn,
                 UpdatedAt = @event.OccurredOn
@@ -106,12 +105,6 @@ public class UserEventHandler :
                 {
                     _logger.LogDebug("Updating email for user {UserId}", @event.UserId);
                     account.Email = @event.Email;
-                }
-
-                if (@event.Phone != null)
-                {
-                    _logger.LogDebug("Updating phone for user {UserId}", @event.UserId);
-                    account.Phone = @event.Phone;
                 }
 
                 if (@event.HashedPassword != null)

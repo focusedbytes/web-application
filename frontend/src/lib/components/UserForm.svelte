@@ -3,14 +3,12 @@
 
 	interface FormData {
 		email: string;
-		phone: string;
 		password: string;
 		role: UserRole;
 	}
 
 	interface Props {
 		email?: string;
-		phone?: string;
 		password?: string;
 		role?: UserRole;
 		isEdit?: boolean;
@@ -18,11 +16,10 @@
 		onCancel: () => void;
 	}
 
-	let { email = '', phone = '', password = '', role = UserRole.User, isEdit = false, onSubmit, onCancel }: Props = $props();
+	let { email = '', password = '', role = UserRole.User, isEdit = false, onSubmit, onCancel }: Props = $props();
 
 	let formData = $state({
 		email,
-		phone,
 		password,
 		role
 	});
@@ -36,26 +33,14 @@
 <form onsubmit={handleSubmit} class="bg-white shadow-md rounded-lg px-8 pt-6 pb-8">
 	<div class="mb-6">
 		<label for="email" class="block text-gray-700 text-sm font-bold mb-2">
-			Email (опціонально)
+			Email
 		</label>
 		<input
 			type="email"
 			id="email"
 			bind:value={formData.email}
 			placeholder="user@example.com"
-			class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-		/>
-	</div>
-
-	<div class="mb-6">
-		<label for="phone" class="block text-gray-700 text-sm font-bold mb-2">
-			Телефон (опціонально)
-		</label>
-		<input
-			type="tel"
-			id="phone"
-			bind:value={formData.phone}
-			placeholder="+380501234567"
+			required={!isEdit}
 			class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
 		/>
 	</div>

@@ -71,7 +71,6 @@ public class UsersController : ControllerBase
     {
         var command = new CreateUserCommand(
             request.Email,
-            request.Phone,
             request.Password,
             request.Role);
 
@@ -101,7 +100,6 @@ public class UsersController : ControllerBase
         var command = new UpdateAccountCommand(
             id,
             request.Email,
-            request.Phone,
             request.Password);
 
         await _updateAccountHandler.HandleAsync(command, cancellationToken);

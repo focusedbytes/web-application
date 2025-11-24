@@ -35,9 +35,6 @@
 			if (data.email && data.email !== user?.email) {
 				updateAccountData.email = data.email;
 			}
-			if (data.phone && data.phone !== user?.phone) {
-				updateAccountData.phone = data.phone;
-			}
 			if (data.password) {
 				updateAccountData.password = data.password;
 			}
@@ -74,7 +71,6 @@
 	{:else if user}
 		<UserForm
 			email={user.email || ''}
-			phone={user.phone || ''}
 			role={user.role === 'Admin' ? UserRole.Admin : UserRole.User}
 			isEdit={true}
 			onSubmit={handleSubmit}

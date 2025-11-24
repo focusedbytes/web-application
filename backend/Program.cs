@@ -62,7 +62,10 @@ builder.Services.AddScoped<EventStoreRepository>();
 // Command Handlers
 builder.Services.AddScoped<CreateUserCommandHandler>();
 builder.Services.AddScoped<UpdateUserCommandHandler>();
-builder.Services.AddScoped<UpdateAccountCommandHandler>();
+builder.Services.AddScoped<UpdateProfileCommandHandler>();
+builder.Services.AddScoped<AddAuthMethodCommandHandler>();
+builder.Services.AddScoped<UpdateAuthMethodCommandHandler>();
+builder.Services.AddScoped<RemoveAuthMethodCommandHandler>();
 builder.Services.AddScoped<DeleteUserCommandHandler>();
 builder.Services.AddScoped<DeactivateUserCommandHandler>();
 

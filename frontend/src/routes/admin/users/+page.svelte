@@ -18,20 +18,20 @@
 			users = await getUsers(page, 20);
 			currentPage = page;
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Не вдалося завантажити користувачів';
+			error = e instanceof Error ? e.message : 'Failed to load users';
 		} finally {
 			loading = false;
 		}
 	}
 
 	async function handleDelete(id: string) {
-		if (!confirm('Ви впевнені, що хочете видалити цього користувача?')) return;
+		if (!confirm('Are you sure you want to delete this user?')) return;
 
 		try {
 			await deleteUser(id);
 			await loadUsers(currentPage);
 		} catch (e) {
-			alert('Не вдалося видалити користувача');
+			alert('Failed to delete user');
 		}
 	}
 
@@ -40,7 +40,7 @@
 			await updateUserStatus(id, { isActive });
 			await loadUsers(currentPage);
 		} catch (e) {
-			alert('Не вдалося змінити статус користувача');
+			alert('Failed to update user status');
 		}
 	}
 
@@ -59,17 +59,17 @@
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 	<div class="flex justify-between items-center mb-8">
-		<h1 class="text-3xl font-bold text-gray-900">Управління користувачами</h1>
+		<h1 class="text-3xl font-bold text-gray-900">User Management</h1>
 		<button
 			onclick={() => goto('/admin/users/create')}
 			class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg transition"
 		>
-			+ Створити користувача
+			+ Create User
 		</button>
 	</div>
 
 	{#if loading}
-		<p class="text-gray-600">Завантаження...</p>
+		<p class="text-gray-600">Loading...</p>
 	{:else if error}
 		<div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4">
 			{error}
@@ -88,6 +88,6 @@
 			onPageChange={handlePageChange}
 		/>
 	{:else}
-		<p class="text-gray-600">Користувачів не знайдено</p>
+		<p class="text-gray-600">No users found</p>
 	{/if}
 </div>

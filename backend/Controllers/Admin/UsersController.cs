@@ -3,7 +3,6 @@ using FocusedBytes.Api.Application.Users.CommandHandlers;
 using FocusedBytes.Api.Application.Users.Queries;
 using FocusedBytes.Api.Application.Users.QueryHandlers;
 using FocusedBytes.Api.Domain.Users.Commands;
-using FocusedBytes.Api.Domain.Users.ValueObjects;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FocusedBytes.Api.Controllers.Admin;
@@ -14,7 +13,10 @@ public class UsersController : ControllerBase
 {
     private readonly CreateUserCommandHandler _createUserHandler;
     private readonly UpdateUserCommandHandler _updateUserHandler;
-    private readonly UpdateAccountCommandHandler _updateAccountHandler;
+    private readonly UpdateProfileCommandHandler _updateProfileHandler;
+    private readonly AddAuthMethodCommandHandler _addAuthMethodHandler;
+    private readonly UpdateAuthMethodCommandHandler _updateAuthMethodHandler;
+    private readonly RemoveAuthMethodCommandHandler _removeAuthMethodHandler;
     private readonly DeleteUserCommandHandler _deleteUserHandler;
     private readonly DeactivateUserCommandHandler _deactivateUserHandler;
     private readonly GetUsersQueryHandler _getUsersHandler;
@@ -23,7 +25,10 @@ public class UsersController : ControllerBase
     public UsersController(
         CreateUserCommandHandler createUserHandler,
         UpdateUserCommandHandler updateUserHandler,
-        UpdateAccountCommandHandler updateAccountHandler,
+        UpdateProfileCommandHandler updateProfileHandler,
+        AddAuthMethodCommandHandler addAuthMethodHandler,
+        UpdateAuthMethodCommandHandler updateAuthMethodHandler,
+        RemoveAuthMethodCommandHandler removeAuthMethodHandler,
         DeleteUserCommandHandler deleteUserHandler,
         DeactivateUserCommandHandler deactivateUserHandler,
         GetUsersQueryHandler getUsersHandler,
@@ -31,7 +36,10 @@ public class UsersController : ControllerBase
     {
         _createUserHandler = createUserHandler;
         _updateUserHandler = updateUserHandler;
-        _updateAccountHandler = updateAccountHandler;
+        _updateProfileHandler = updateProfileHandler;
+        _addAuthMethodHandler = addAuthMethodHandler;
+        _updateAuthMethodHandler = updateAuthMethodHandler;
+        _removeAuthMethodHandler = removeAuthMethodHandler;
         _deleteUserHandler = deleteUserHandler;
         _deactivateUserHandler = deactivateUserHandler;
         _getUsersHandler = getUsersHandler;
@@ -70,9 +78,11 @@ public class UsersController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var command = new CreateUserCommand(
-            request.Email,
-            request.Password,
-            request.Role);
+            request.Username,
+            request.Role,
+            request.AuthIdentifier,
+            request.AuthType,
+            request.AuthSecret);
 
         var userId = await _createUserHandler.HandleAsync(command, cancellationToken);
 
@@ -91,18 +101,59 @@ public class UsersController : ControllerBase
         return NoContent();
     }
 
-    [HttpPatch("{id}/account")]
-    public async Task<IActionResult> UpdateAccount(
+    [HttpPatch("{id}/profile")]
+    public async Task<IActionResult> UpdateProfile(
         Guid id,
-        [FromBody] UpdateAccountRequest request,
+        [FromBody] UpdateProfileRequest request,
         CancellationToken cancellationToken = default)
     {
-        var command = new UpdateAccountCommand(
-            id,
-            request.Email,
-            request.Password);
+        var command = new UpdateProfileCommand(id, request.DisplayName);
+        await _updateProfileHandler.HandleAsync(command, cancellationToken);
 
-        await _updateAccountHandler.HandleAsync(command, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("{id}/auth-methods")]
+    public async Task<IActionResult> AddAuthMethod(
+        Guid id,
+        [FromBody] AddAuthMethodRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new AddAuthMethodCommand(
+            id,
+            request.Identifier,
+            request.Type,
+            request.Secret);
+
+        await _addAuthMethodHandler.HandleAsync(command, cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpPatch("{id}/auth-methods")]
+    public async Task<IActionResult> UpdateAuthMethod(
+        Guid id,
+        [FromBody] UpdateAuthMethodRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new UpdateAuthMethodCommand(
+            id,
+            request.Identifier,
+            request.NewSecret);
+
+        await _updateAuthMethodHandler.HandleAsync(command, cancellationToken);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}/auth-methods/{identifier}")]
+    public async Task<IActionResult> RemoveAuthMethod(
+        Guid id,
+        string identifier,
+        CancellationToken cancellationToken = default)
+    {
+        var command = new RemoveAuthMethodCommand(id, identifier);
+        await _removeAuthMethodHandler.HandleAsync(command, cancellationToken);
 
         return NoContent();
     }

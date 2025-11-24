@@ -22,7 +22,6 @@ public class GetUserByIdQueryHandler : IQueryHandler<GetUserByIdQuery, UserDetai
             .Select(u => new UserDetailDto(
                 u.Id,
                 u.Account!.Email,
-                u.Account.Phone,
                 u.Role,
                 u.IsActive,
                 u.Account.LastLoginAt,

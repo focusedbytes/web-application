@@ -34,7 +34,6 @@ public class GetUsersQueryHandler : IQueryHandler<GetUsersQuery, UserListResult>
             .Select(u => new UserDto(
                 u.Id,
                 u.Account!.Email,
-                u.Account.Phone,
                 u.Role,
                 u.IsActive,
                 u.Account.LastLoginAt,

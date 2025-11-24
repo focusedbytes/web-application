@@ -7,7 +7,6 @@ public record GetUserByIdQuery(Guid UserId) : IQuery<UserDetailDto?>;
 public record UserDetailDto(
     Guid Id,
     string? Email,
-    string? Phone,
     string Role,
     bool IsActive,
     DateTime? LastLoginAt,

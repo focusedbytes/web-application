@@ -5,5 +5,4 @@ namespace FocusedBytes.Api.Application.DTOs;
 /// </summary>
 public record UpdateAccountRequest(
     string? Email,
-    string? Phone,
     string? Password);

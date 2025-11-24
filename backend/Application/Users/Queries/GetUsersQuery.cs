@@ -19,7 +19,6 @@ public record UserListResult(
 public record UserDto(
     Guid Id,
     string? Email,
-    string? Phone,
     string Role,
     bool IsActive,
     DateTime? LastLoginAt,

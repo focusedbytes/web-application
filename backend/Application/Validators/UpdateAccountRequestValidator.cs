@@ -14,9 +14,8 @@ public class UpdateAccountRequestValidator : AbstractValidator<UpdateAccountRequ
         // At least one field must be provided
         RuleFor(x => x)
             .Must(x => !string.IsNullOrWhiteSpace(x.Email) ||
-                      !string.IsNullOrWhiteSpace(x.Phone) ||
                       !string.IsNullOrWhiteSpace(x.Password))
-            .WithMessage("At least one field (email, phone, or password) must be provided");
+            .WithMessage("At least one field (email or password) must be provided");
 
         // Email validation (if provided)
         When(x => !string.IsNullOrWhiteSpace(x.Email), () =>
@@ -28,18 +27,6 @@ public class UpdateAccountRequestValidator : AbstractValidator<UpdateAccountRequ
                 .WithMessage("Email must be a valid email address")
                 .MaximumLength(255)
                 .WithMessage("Email must not exceed 255 characters");
-        });
-
-        // Phone validation (if provided)
-        When(x => !string.IsNullOrWhiteSpace(x.Phone), () =>
-        {
-            RuleFor(x => x.Phone)
-                .NotEmpty()
-                .WithMessage("Phone cannot be empty")
-                .Matches(@"^\+380\d{9}$")
-                .WithMessage("Phone must be in format +380XXXXXXXXX")
-                .MaximumLength(20)
-                .WithMessage("Phone must not exceed 20 characters");
         });
 
         // Password validation (if provided)

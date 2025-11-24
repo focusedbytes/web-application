@@ -21,10 +21,9 @@ public class UpdateAccountCommandHandler : ICommandHandler<UpdateAccountCommand>
     public async Task HandleAsync(UpdateAccountCommand command, CancellationToken cancellationToken = default)
     {
         _logger.LogInformation(
-            "Updating account for user {UserId} - Email: {HasEmail}, Phone: {HasPhone}, Password: {HasPassword}",
+            "Updating account for user {UserId} - Email: {HasEmail}, Password: {HasPassword}",
             command.UserId,
             !string.IsNullOrWhiteSpace(command.Email),
-            !string.IsNullOrWhiteSpace(command.Phone),
             !string.IsNullOrWhiteSpace(command.Password));
 
         try
@@ -39,15 +38,11 @@ public class UpdateAccountCommandHandler : ICommandHandler<UpdateAccountCommand>
                 ? Email.Create(command.Email)
                 : null;
 
-            var phone = !string.IsNullOrWhiteSpace(command.Phone)
-                ? Phone.Create(command.Phone)
-                : null;
-
             var hashedPassword = !string.IsNullOrWhiteSpace(command.Password)
                 ? HashedPassword.Create(command.Password)
                 : null;
 
-            user.UpdateAccount(email, phone, hashedPassword);
+            user.UpdateAccount(email, hashedPassword);
 
             await _eventStore.SaveEventsAsync(
                 command.UserId,
